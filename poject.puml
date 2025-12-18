@@ -1,0 +1,126 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam classAttributeIconSize 0
+
+' ===== KLASY GŁÓWNE =====
+
+class ServerMain {
+    + main(args : String[]) : void
+}
+
+class ClientMain {
+    + main(args : String[]) : void
+}
+
+class GameSession {
+    - board : Board
+    - rules : RulesEngine
+    - black : ClientHandler
+    - white : ClientHandler
+    - currentTurn : Stone
+    - blackPrisoners : int
+    - whitePrisoners : int
+
+    + GameSession(p1 : Socket, p2 : Socket)
+    + addPrisoner(capturer : Stone) : void
+    + start() : void
+    + handleMove(move : Move, sender : ClientHandler) : void
+}
+
+class RulesEngine {
+    + applyMove(board : Board,move : Move,stone : Stone,session : GameSession) : boolean
+
+    - hasAnyLiberty(board : Board,x : int,y : int) : boolean
+
+    - neighbors(x : int,y : int) : List<int[]>
+}
+
+class Board {
+    - grid : Stone[][]
+    - size : int
+
+    + Board(size : int)
+    + getSize() : int
+    + inBounds(x : int, y : int) : boolean
+    + get(x : int, y : int) : Stone
+    + set(x : int, y : int, s : Stone) : void
+    + toString() : String
+}
+
+class ClientHandler {
+    - in : ObjectInputStream
+    - out : ObjectOutputStream
+    - stone : Stone
+    - session : GameSession
+
+    + ClientHandler(socket : Socket, stone : Stone, session : GameSession)
+    + getStone() : Stone
+    + sendState(state : GameState) : void
+    + run() : void
+}
+
+' ===== WĄTKI I INTERFEJSY =====
+
+class Thread
+interface Serializable
+
+' ===== DTO =====
+
+class Move {
+    + x : int
+    + y : int
+    + Move(x : int, y : int)
+}
+
+class GameState {
+    + board : String
+    + message : String
+    + yourTurn : boolean
+    + GameState(board : String, message : String, yourTurn : boolean)
+}
+
+' ===== ENUM =====
+
+enum Stone {
+    BLACK
+    WHITE
+    EMPTY
+    + opposite() : Stone
+}
+
+' ===== DZIEDZICZENIE / IMPLEMENTACJA =====
+
+ClientHandler --|> Thread
+Move ..|> Serializable
+GameState ..|> Serializable
+
+' ===== RELACJE SERWERA =====
+
+ServerMain ..> GameSession : creates
+GameSession *-- Board
+GameSession *-- RulesEngine
+GameSession o-- ClientHandler : black / white
+
+ClientHandler --> GameSession : has reference
+
+' ===== LOGIKA GRY =====
+
+RulesEngine ..> Board : uses
+RulesEngine ..> Move : uses
+RulesEngine ..> Stone : uses
+RulesEngine ..> GameSession : addPrisoner()
+
+' ===== STRUKTURA DANYCH =====
+
+Board --> Stone : grid
+
+' ===== KOMUNIKACJA =====
+
+ClientHandler ..> Move : reads
+ClientHandler ..> GameState : sends
+
+ClientMain ..> Move : creates & sends
+ClientMain ..> GameState : receives
+
+@enduml
