@@ -98,23 +98,14 @@ public class GameSession {
         }
 
         // ===== PASS =====
-        if (move.pass) {
+//        if (move.pass) {
+        if (move.x == 8) {
+
             consecutivePasses++;
 
             if (consecutivePasses >= 2) {
                 gameOver = true;
-
-                black.sendState(new GameState(
-                        board.toString(),
-                        "Both players passed. Game over.",
-                        false
-                ));
-
-                white.sendState(new GameState(
-                        board.toString(),
-                        "Both players passed. Game over.",
-                        false
-                ));
+                finishGame();
                 return;
             }
 
@@ -165,6 +156,23 @@ public class GameSession {
         ));
     }
 
+    private void finishGame() {
+        ScoringEngine engine = new ScoringEngine();
+        ScoringResult result = engine.score(
+                board,
+                blackPrisoners,
+                whitePrisoners
+        );
+
+        String msg =
+                "Game over\n" +
+                        "BLACK: " + result.blackScore + "\n" +
+                        "WHITE: " + result.whiteScore + "\n" +
+                        (result.blackScore > result.whiteScore ? "BLACK wins" : "WHITE wins");
+
+        black.sendState(new GameState(board.toString(), msg, false));
+        white.sendState(new GameState(board.toString(), msg, false));
+    }
 
     public Board getPreviousBoard() {
         return previousBoard;
