@@ -8,7 +8,7 @@ public class GameSession {
     private ClientHandler black;
     private ClientHandler white;
     private Stone currentTurn = Stone.BLACK;
-
+    private Board previousBoard = null;
     private int blackPrisoners = 0;
     private int whitePrisoners = 0;
 
@@ -76,4 +76,13 @@ public class GameSession {
         ClientHandler other = sender.getStone() == Stone.BLACK ? white : black;
         other.sendState(new GameState(board.toString(), "Your turn", true));
     }
+
+    public Board getPreviousBoard() {
+        return previousBoard;
+    }
+
+    public void setPreviousBoard(Board b) {
+        previousBoard = b;
+    }
+
 }
