@@ -45,11 +45,9 @@ public class Board {
 
     /**
      * Pobiera kamień znajdujący się na podanych współrzędnych.
-     * <p>
      * Uwaga: Metoda nie sprawdza granic tablicy. W przypadku podania
      * nieprawidłowych współrzędnych może zostać rzucony wyjątek {@link ArrayIndexOutOfBoundsException}.
      * Zaleca się wcześniejsze sprawdzenie metodą {@link #inBounds(int, int)}.
-     * </p>
      *
      * @param x Współrzędna pozioma pola.
      * @param y Współrzędna pionowa pola.

@@ -14,15 +14,11 @@ public class ServerMain {
 
     /**
      * Punkt wejścia aplikacji serwerowej.
-     * <p>
      * Metoda wykonuje następujące kroki:
-     * <ol>
-     * <li>Otwiera gniazdo serwerowe na porcie 12345.</li>
-     * <li>Wstrzymuje wykonanie (blokuje wątek) do momentu połączenia się pierwszego gracza.</li>
-     * <li>Ponownie blokuje wątek do momentu połączenia się drugiego gracza.</li>
-     * <li>Tworzy obiekt {@link GameSession}, który przejmuje dalszą obsługę logiki gry.</li>
-     * </ol>
-     * </p>
+     * Otwiera gniazdo serwerowe na porcie 12345.
+     * Wstrzymuje wykonanie (blokuje wątek) do momentu połączenia się pierwszego gracza.
+     * Ponownie blokuje wątek do momentu połączenia się drugiego gracza.
+     * Tworzy obiekt {@link GameSession}, który przejmuje dalszą obsługę logiki gry.
      *
      * @param args Argumenty linii komend (nieużywane).
      */

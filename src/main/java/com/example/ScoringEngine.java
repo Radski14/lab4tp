@@ -29,7 +29,6 @@ public class ScoringEngine {
 
         for (int x = 0; x < board.getSize(); x++) {
             for (int y = 0; y < board.getSize(); y++) {
-                // Szukamy nieodwiedzonego jeszcze pustego pola, aby sprawdzić terytorium
                 if (board.get(x, y) == Stone.EMPTY && !visited[x][y]) {
                     Territory t = floodTerritory(board, x, y, visited);
 
@@ -81,18 +80,15 @@ public class ScoringEngine {
                         q.add(new Point(nx, ny));
                     }
                 } else {
-                    // Jeśli pole nie jest puste, oznacza to kamień graniczny
                     borderingColors.add(s);
                 }
             }
         }
 
-        // Jeśli obszar graniczy z oboma kolorami lub nie graniczy z żadnym
         if (borderingColors.size() != 1) {
             return new Territory(Stone.EMPTY, 0);
         }
 
-        // Zwracamy kolor jedynego sąsiada oraz liczbę pól
         return new Territory(borderingColors.iterator().next(), count);
     }
 

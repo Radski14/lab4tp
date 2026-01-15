@@ -29,7 +29,6 @@ public class ClientHandler extends Thread {
         this.stone = stone;
         this.session = session;
 
-        // Kolejność inicjalizacji strumieni jest istotna dla poprawnego nawiązania połączenia ObjectStream
         this.out = new ObjectOutputStream(socket.getOutputStream());
         this.out.flush();
         this.in = new ObjectInputStream(socket.getInputStream());
@@ -60,11 +59,9 @@ public class ClientHandler extends Thread {
 
     /**
      * Główna pętla wątku obsługująca komunikację przychodzącą.
-     * <p>
      * Metoda w pętli oczekuje na obiekty typu {@link Move} przesyłane przez klienta.
      * Po odebraniu ruchu, przekazuje go do sesji gry w celu przetworzenia.
      * Pętla kończy się w momencie rozłączenia klienta lub wystąpienia błędu komunikacji.
-     * </p>
      */
     @Override
     public void run() {

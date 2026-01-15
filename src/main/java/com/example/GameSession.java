@@ -2,60 +2,94 @@ package com.example;
 
 import java.net.*;
 
+/**
+ * Zarządza jedną sesją gry Go pomiędzy dwoma graczami.
+ * Odpowiada za stan gry, tury, punktację i komunikację z klientami.
+ */
 public class GameSession {
-    private final Board board = new Board(19);
-    private final RulesEngine rules = new RulesEngine();
-    private ClientHandler black;
-    private ClientHandler white;
-    private Stone currentTurn = Stone.BLACK;
-    private Board previousBoard = null; // To pole jest niezbędne dla reguły Ko
 
-    // Zmienne stanu gry
+    /** Aktualna plansza gry. */
+    private final Board board = new Board(19);
+
+    /** Silnik reguł gry. */
+    private final RulesEngine rules = new RulesEngine();
+
+    /** Klient grający czarnymi kamieniami. */
+    private ClientHandler black;
+
+    /** Klient grający białymi kamieniami. */
+    private ClientHandler white;
+
+    /** Kamień gracza, którego jest aktualnie tura. */
+    private Stone currentTurn = Stone.BLACK;
+
+    /** Poprzedni stan planszy (do reguły Ko). */
+    private Board previousBoard = null;
+
+    /** Liczba kolejnych pasów. */
     private int consecutivePasses = 0;
+
+    /** Informacja, czy gra została zakończona. */
     private boolean gameOver = false;
+
+    /** Informacja, czy trwa faza punktacji. */
     private boolean scoringPhase = false;
 
-    // Zmienne do punktacji
+    /** Liczba jeńców czarnego gracza. */
     private int blackPrisoners = 0;
+
+    /** Liczba jeńców białego gracza. */
     private int whitePrisoners = 0;
 
-    // Zgody na koniec fazy usuwania
+    /** Czy czarny zakończył usuwanie kamieni. */
     private boolean blackDone = false;
+
+    /** Czy biały zakończył usuwanie kamieni. */
     private boolean whiteDone = false;
 
+    /**
+     * Tworzy nową sesję gry dla dwóch graczy.
+     *
+     * @param p1 Gniazdo gracza czarnego.
+     * @param p2 Gniazdo gracza białego.
+     * @throws Exception w przypadku błędu połączenia.
+     */
     public GameSession(Socket p1, Socket p2) throws Exception {
         black = new ClientHandler(p1, Stone.BLACK, this);
         white = new ClientHandler(p2, Stone.WHITE, this);
     }
 
+    /** Uruchamia grę i rozpoczyna wątki klientów. */
     public void start() {
         black.start();
         white.start();
         broadcast("Game started. BLACK begins.", true);
     }
 
+    /**
+     * Obsługuje ruch przesłany przez gracza.
+     *
+     * @param move   Wykonany ruch.
+     * @param sender Gracz wykonujący ruch.
+     */
     public synchronized void handleMove(Move move, ClientHandler sender) {
         if (gameOver) return;
 
-        // punktacja
         if (scoringPhase) {
             handleScoringMove(move, sender);
             return;
         }
 
-        // zwyczajne ruchy
         if (sender.getStone() != currentTurn) {
             sender.sendState(new GameState(board.toString(), "Not your turn", false));
             return;
         }
 
-        // poddanie się
         if (move.resign) {
             endGameByResignation(sender);
             return;
         }
 
-        // pass
         if (move.pass) {
             consecutivePasses++;
             if (consecutivePasses >= 2) {
@@ -65,7 +99,6 @@ public class GameSession {
             switchTurn(sender, "You passed", "Opponent passed. Your turn.");
             return;
         }
-
 
         consecutivePasses = 0;
 
@@ -79,7 +112,7 @@ public class GameSession {
         switchTurn(sender, "Move accepted", "Your turn");
     }
 
-
+    /** Rozpoczyna fazę punktacji. */
     private void startScoringPhase() {
         scoringPhase = true;
         blackDone = false;
@@ -90,8 +123,14 @@ public class GameSession {
         white.sendState(new GameState(board.toString(), msg, true));
     }
 
+    /**
+     * Obsługuje akcje graczy w fazie punktacji.
+     *
+     * @param move   Ruch punktacyjny.
+     * @param sender Gracz wykonujący akcję.
+     */
     private void handleScoringMove(Move move, ClientHandler sender) {
-        // Obsługa przycisku DONE
+
         if (move.doneScoring) {
             if (sender.getStone() == Stone.BLACK) blackDone = true;
             else whiteDone = true;
@@ -113,7 +152,6 @@ public class GameSession {
                 if (target == Stone.BLACK) whitePrisoners++;
                 else blackPrisoners++;
 
-                // Reset zgody po zmianie stanu
                 blackDone = false;
                 whiteDone = false;
 
@@ -124,21 +162,30 @@ public class GameSession {
         }
     }
 
+    /** Kończy grę i oblicza wynik. */
     private void finishGameAndScore() {
         gameOver = true;
         ScoringEngine engine = new ScoringEngine();
         ScoringResult result = engine.score(board, blackPrisoners, whitePrisoners, 6.5f);
 
-        String msg = String.format("GAME OVER\nBLACK: %.1f | WHITE: %.1f\n%s wins!",
+        String msg = String.format(
+                "GAME OVER\nBLACK: %.1f | WHITE: %.1f\n%s wins!",
                 result.blackScore,
                 result.whiteScore,
-                result.blackScore > result.whiteScore ? "BLACK" : "WHITE");
+                result.blackScore > result.whiteScore ? "BLACK" : "WHITE"
+        );
 
         black.sendState(new GameState(board.toString(), msg, false));
         white.sendState(new GameState(board.toString(), msg, false));
     }
 
-
+    /**
+     * Zmienia turę gracza.
+     *
+     * @param currentSender Gracz wykonujący ruch.
+     * @param msgSelf       Komunikat dla niego.
+     * @param msgOther      Komunikat dla przeciwnika.
+     */
     private void switchTurn(ClientHandler currentSender, String msgSelf, String msgOther) {
         currentTurn = currentTurn.opposite();
         ClientHandler other = (currentSender.getStone() == Stone.BLACK) ? white : black;
@@ -147,6 +194,11 @@ public class GameSession {
         other.sendState(new GameState(board.toString(), msgOther, true));
     }
 
+    /**
+     * Kończy grę przez poddanie się gracza.
+     *
+     * @param loser Gracz, który się poddał.
+     */
     private void endGameByResignation(ClientHandler loser) {
         gameOver = true;
         ClientHandler winner = (loser.getStone() == Stone.BLACK) ? white : black;
@@ -154,21 +206,33 @@ public class GameSession {
         winner.sendState(new GameState(board.toString(), "Opponent resigned. You win.", false));
     }
 
+    /**
+     * Wysyła ten sam stan gry do obu graczy.
+     *
+     * @param msg       Treść komunikatu.
+     * @param blackTurn Czy czarny ma turę.
+     */
     private void broadcast(String msg, boolean blackTurn) {
         black.sendState(new GameState(board.toString(), msg, blackTurn));
         white.sendState(new GameState(board.toString(), msg, !blackTurn));
     }
 
+    /**
+     * Dodaje jeńca do odpowiedniego gracza.
+     *
+     * @param capturer Gracz, który zdobył kamień.
+     */
     public void addPrisoner(Stone capturer) {
         if (capturer == Stone.BLACK) blackPrisoners++;
         else whitePrisoners++;
     }
 
-
+    /** Zwraca poprzedni stan planszy. */
     public Board getPreviousBoard() {
         return previousBoard;
     }
 
+    /** Ustawia poprzedni stan planszy. */
     public void setPreviousBoard(Board b) {
         previousBoard = b;
     }

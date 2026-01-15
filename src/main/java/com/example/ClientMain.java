@@ -47,7 +47,6 @@ public class ClientMain extends Application {
      */
     @Override
     public void start(Stage stage) throws Exception {
-        // Połączenie z serwerem na localhost
         Socket socket = new Socket("localhost", 12345);
         out = new ObjectOutputStream(socket.getOutputStream());
         out.flush();
@@ -62,7 +61,6 @@ public class ClientMain extends Application {
 
         StackPane board = new StackPane(boardCanvas, stoneLayer);
 
-        // Konfiguracja przycisków
         passBtn.setOnAction(e -> sendMove(new Move(-1, -1, true, false, false)));
         resignBtn.setOnAction(e -> sendMove(new Move(-1, -1, false, true, false)));
         doneBtn.setOnAction(e -> sendMove(new Move(-1, -1, false, false, true)));
@@ -98,7 +96,6 @@ public class ClientMain extends Application {
 
         if (x < 0 || y < 0 || x >= SIZE || y >= SIZE) return;
 
-        // Wysłanie ruchu (w trybie scoring serwer potraktuje to jako wskazanie kamienia do usunięcia)
         sendMove(new Move(x, y, false, false, false));
     }
 
@@ -112,7 +109,6 @@ public class ClientMain extends Application {
         yourTurn = state.yourTurn;
         status.setText(state.message);
 
-        // Wykrywanie fazy punktacji na podstawie komunikatów serwera
         if (state.message.contains("SCORING PHASE") || state.message.contains("removed")) {
             scoringMode = true;
         } else if (state.message.contains("GAME OVER")) {
@@ -120,7 +116,6 @@ public class ClientMain extends Application {
             scoringMode = false;
         }
 
-        // Aktualizacja stanów przycisków w zależności od fazy gry
         if (scoringMode && !gameOver) {
             passBtn.setVisible(false);
             resignBtn.setVisible(false);
@@ -176,7 +171,6 @@ public class ClientMain extends Application {
             try {
                 while (true) {
                     GameState s = (GameState) in.readObject();
-                    // Aktualizacja UI musi odbywać się w wątku JavaFX Application Thread
                     Platform.runLater(() -> updateUI(s));
                 }
             } catch (Exception e) {

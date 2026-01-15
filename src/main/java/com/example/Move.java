@@ -6,10 +6,9 @@ import java.io.Serializable;
  * Reprezentuje akcję wykonaną przez gracza i przesłaną do serwera.
  * Klasa implementuje {@link Serializable}, aby umożliwić przesyłanie danych przez sieć.
  * Obiekt ten może reprezentować trzy rodzaje akcji:
- *
- * Postawienie kamienia (użycie pól x, y)</li>
- * Akcję specjalną (pass, resign)</li>
- * Potwierdzenie zakończenia fazy punktacji (doneScoring)</li>
+ * Postawienie kamienia (użycie pól x, y)
+ * Akcję specjalną (pass, resign)
+ * Potwierdzenie zakończenia fazy punktacji (doneScoring)
  *
  */
 public class Move implements Serializable {
