@@ -2,34 +2,52 @@ package com.example;
 
 import java.io.Serializable;
 
+/**
+ * Reprezentuje akcję wykonaną przez gracza i przesłaną do serwera.
+ * Klasa implementuje {@link Serializable}, aby umożliwić przesyłanie danych przez sieć.
+ * Obiekt ten może reprezentować trzy rodzaje akcji:
+ *
+ * Postawienie kamienia (użycie pól x, y)</li>
+ * Akcję specjalną (pass, resign)</li>
+ * Potwierdzenie zakończenia fazy punktacji (doneScoring)</li>
+ *
+ */
 public class Move implements Serializable {
-    public final int x;
-    public final int y;
-    public final boolean pass;
-    public final boolean resign;
 
-    // zwykły ruch
-    public Move(int x, int y) {
-        this.x = x;
-        this.y = y;
-        this.pass = false;
-        this.resign = false;
+    public int x;
+    public int y;
+
+    public boolean pass;
+    public boolean resign;
+    public boolean doneScoring;
+
+    /**
+     * Konstruktor pomocniczy dla standardowych akcji gry.
+     * Domyślnie ustawia {@code doneScoring} na {@code false}.
+     *
+     * @param x      Współrzędna X ruchu.
+     * @param y      Współrzędna Y ruchu.
+     * @param pass   {@code true}, jeśli gracz pasuje.
+     * @param resign {@code true}, jeśli gracz rezygnuje.
+     */
+    public Move(int x, int y, boolean pass, boolean resign) {
+        this(x, y, pass, resign, false);
     }
 
-    // PASS
-    public static Move pass() {
-        return new Move(-1, -1, true, false);
-    }
-
-    // RESIGN
-    public static Move resign() {
-        return new Move(-1, -1, false, true);
-    }
-
-    private Move(int x, int y, boolean pass, boolean resign) {
+    /**
+     * Pełny konstruktor obiektu ruchu, pozwalający na ustawienie wszystkich flag.
+     *
+     * @param x           Współrzędna X ruchu.
+     * @param y           Współrzędna Y ruchu.
+     * @param pass        {@code true}, jeśli gracz pasuje.
+     * @param resign      {@code true}, jeśli gracz rezygnuje.
+     * @param doneScoring {@code true}, jeśli gracz potwierdza koniec fazy punktacji.
+     */
+    public Move(int x, int y, boolean pass, boolean resign, boolean doneScoring) {
         this.x = x;
         this.y = y;
         this.pass = pass;
         this.resign = resign;
+        this.doneScoring = doneScoring;
     }
 }

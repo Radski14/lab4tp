@@ -11,7 +11,6 @@ public class RulesEngine {
         if (!board.inBounds(x, y)) return false;
         if (board.get(x, y) != Stone.EMPTY) return false;
 
-        // zapamiętaj planszę PRZED ruchem
         Board beforeMove = board.copy();
 
         board.set(x, y, stone);
@@ -32,21 +31,20 @@ public class RulesEngine {
             }
         }
 
-        // samobójstwo (jeśli nic nie zbito)
+        // samobójstwo
         Set<Point> myChain = collectChain(board, x, y);
         if (!hasLiberty(board, myChain) && captured == 0) {
             restoreBoard(board, beforeMove);
             return false;
         }
 
-        // ===== REGUŁA KO =====
+        // ko
         Board prev = session.getPreviousBoard();
         if (prev != null && board.equals(prev)) {
             restoreBoard(board, beforeMove);
             return false;
         }
 
-        // zapamiętaj pozycję sprzed ruchu (do KO w następnym ruchu)
         session.setPreviousBoard(beforeMove);
 
         // dodaj jeńców
@@ -57,8 +55,6 @@ public class RulesEngine {
         return true;
     }
 
-
-    /* ===================== LOGIKA ===================== */
 
     private Set<Point> collectChain(Board board, int x, int y) {
         Stone color = board.get(x, y);
@@ -118,27 +114,5 @@ public class RulesEngine {
         for (int x = 0; x < board.getSize(); x++)
             for (int y = 0; y < board.getSize(); y++)
                 board.set(x, y, snapshot.get(x, y));
-    }
-
-
-    /* ===================== POINT ===================== */
-
-    private static class Point {
-        int x, y;
-
-        Point(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        @Override public boolean equals(Object o) {
-            if (!(o instanceof Point)) return false;
-            Point p = (Point) o;
-            return x == p.x && y == p.y;
-        }
-
-        @Override public int hashCode() {
-            return Objects.hash(x, y);
-        }
     }
 }
